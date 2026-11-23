@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weekly Rhythm & Focus OS</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark;--bg:#09090B;--s:#111114;--s2:#121316;--ln:rgba(255,255,255,.08);--tx:#A1A1AA;--hi:#FAFAFA;--ac:#818CF8;--g:#4ADE80;--r:#F87171;--y:#FBBF24}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,'Noto Sans TC',system-ui,sans-serif;font-size:14px;line-height:1.6;background-image:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(129,140,248,.18),transparent 70%);background-repeat:no-repeat}
+h1,h2,h3{color:var(--hi);letter-spacing:-.02em;margin:0;font-weight:600}
+.n{font-variant-numeric:tabular-nums}
+section{border-top:1px solid var(--ln);padding:40px 20px}
+.w{max-width:1040px;margin:0 auto}
+.card{background:var(--s2);border:1px solid var(--ln);border-radius:12px;padding:16px}
+.btn{background:var(--s);border:1px solid var(--ln);color:var(--hi);border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit;transition:all .3s cubic-bezier(.16,1,.3,1)}
+.btn:hover{border-color:rgba(255,255,255,.25)}
+.btn.on{background:var(--ac);border-color:var(--ac);color:#09090B;font-weight:600}
+.btn.red.on{background:var(--r);border-color:var(--r)}
+.btn.grn.on{background:var(--g);border-color:var(--g)}
+.tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#71717A}
+.bar{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.bar>i{display:block;height:100%;transition:width .5s cubic-bezier(.16,1,.3,1)}
+input[type=range]{width:100%;accent-color:#818CF8}
+input[type=time],select{background:var(--s);color:var(--hi);border:1px solid var(--ln);border-radius:8px;padding:5px 8px;font:inherit}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--ln);cursor:pointer}
+.chk input{margin-top:5px;accent-color:#818CF8;width:16px;height:16px}
+.chk.d span{text-decoration:line-through;opacity:.5}
+.dot{width:30px;height:30px;border-radius:8px;border:1px solid var(--ln);display:grid;place-items:center;font-size:12px}
+.dot.on{background:var(--g);color:#09090B;border-color:var(--g);font-weight:600}
+.dot.today{outline:1px solid var(--ac)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.tabs .btn{white-space:nowrap}
+.grid2{display:grid;gap:16px}
+@media(min-width:800px){.grid2{grid-template-columns:1fr 1fr}}
+.seg{cursor:pointer;transition:stroke-width .3s cubic-bezier(.16,1,.3,1),opacity .3s}
+</style>
+</head>
+<body>
+<header class="w" style="padding:40px 20px 24px">
+  <div class="tag">Weekly Rhythm &amp; Focus OS</div>
+  <h1 class="text-3xl md:text-5xl" style="margin-top:6px">168 小時高強度作息與自律管理儀表板</h1>
+  <p style="max-width:620px;margin-top:10px">每天打開就能操作、追蹤與自我檢核。所有勾選、打卡與檢核紀錄都儲存在這台裝置的瀏覽器中。</p>
+</header>
+
+<!-- 模組 1 -->
+<section style="padding-top:24px"><div class="w">
+  <div class="tag">模組 1 · 即時狀態列</div>
+  <div class="card" style="margin-top:10px">
+    <div class="flex flex-wrap justify-between gap-3 items-center">
+      <div><div id="clock" class="n" style="font-size:28px;color:var(--hi);font-weight:600"></div><div id="dayname"></div></div>
+      <div class="flex flex-wrap gap-2 items-center">
+        <label class="flex gap-2 items-center"><input type="checkbox" id="simOn" style="accent-color:#818CF8"> 模擬時間</label>
+        <select id="simDay"></select><input type="time" id="simTime" value="16:30">
+      </div>
+    </div>
+    <div id="status" style="margin-top:14px;font-size:18px;color:var(--hi);font-weight:500"></div>
+    <div id="statusHint" style="margin-top:2px"></div>
+    <div id="fatigue" style="display:none;margin-top:12px;border:1px solid var(--r);background:rgba(248,113,113,.1);color:var(--r);border-radius:8px;padding:10px 12px">高疲勞警告：僅花 30 分鐘快覽筆記，切忌硬讀熬夜。</div>
+  </div>
+</div></section>
+
+<!-- 模組 2 -->
+<section><div class="w">
+  <div class="tag">模組 2 · 時間權重</div>
+  <h2 class="text-2xl" style="margin:6px 0 16px">一週 168 小時分配</h2>
+  <div class="grid2" style="align-items:center">
+    <svg id="donut" viewBox="0 0 200 200" style="max-width:300px;width:100%;margin:auto"></svg>
+    <div class="card" id="donutInfo" style="min-height:150px"></div>
+  </div>
+
+  <h2 class="text-2xl" style="margin:40px 0 12px">24 小時模式模擬器</h2>
+  <div class="tabs" id="modeTabs"></div>
+  <div id="modeNote" style="margin:8px 0 12px"></div>
+  <div id="modeBars" class="card"></div>
+  <div class="card" style="margin-top:12px">
+    <div class="flex justify-between"><span>睡眠時數微調（睡眠與午休）</span><b id="sleepVal" class="n" style="color:var(--hi)"></b></div>
+    <input type="range" id="sleepSlider" min="5" max="10" step="0.5" value="7.5">
+    <div id="sleepWarn" style="display:none;margin-top:8px;color:var(--r)">睡眠低於 7 小時將導致白天專注效率斷崖式下跌。</div>
+    <div class="tag" style="margin-top:6px">差額會自動從「自由探索與運動」增減</div>
+  </div>
+</div></section>
+
+<!-- 模組 3 -->
+<section><div class="w">
+  <div class="tag">模組 3 · 行程與任務</div>
+  <h2 class="text-2xl" style="margin:6px 0 4px">一週 7 天互動行程表</h2>
+  <p style="margin:0 0 12px">自主時數已扣除每日約 30–40 分鐘彈性休息與洗澡緩衝。</p>
+  <div class="tabs" id="dayTabs"></div>
+  <div id="dayView" style="margin-top:12px"></div>
+</div></section>
+
+<!-- 模組 4 -->
+<section><div class="w">
+  <div class="tag">模組 4 · 數學雙軌策略</div>
+  <h2 class="text-2xl" style="margin:6px 0 4px">高頻率、短時間刺激，勝過週末一次算 5 小時</h2>
+  <div class="flex flex-wrap items-center gap-4" style="margin:16px 0">
+    <div class="flex gap-2" id="dotRow"></div>
+    <div>連續達標 <b id="streak" class="n" style="color:var(--g);font-size:20px">0</b> 天</div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="flex gap-2" id="trackBtns" style="margin-bottom:10px"></div>
+      <div id="trackInfo"></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div id="tm" class="n" style="font-size:56px;color:var(--hi);font-weight:600;letter-spacing:-.03em">40:00</div>
+      <div class="flex gap-2 justify-center flex-wrap" id="durBtns" style="margin:8px 0"></div>
+      <div class="flex gap-2 justify-center flex-wrap">
+        <button class="btn" id="tStart">啟動</button><button class="btn" id="tReset">重置</button><button class="btn grn" id="tCheck">今日打卡</button>
+      </div>
+      <div id="tMsg" style="margin-top:8px;min-height:22px"></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 模組 5 -->
+<section><div class="w">
+  <div class="tag">模組 5 · 防過勞與關係邊界</div>
+  <h2 class="text-2xl" style="margin:6px 0 16px">三大執行底線 + 睡前黃金緩衝</h2>
+  <div class="grid2">
+    <div class="card"><b style="color:var(--hi)">底線 1</b><br>週二、五 22:00 回家後絕不硬讀，僅 30 分鐘快覽筆記後立刻洗澡睡覺。</div>
+    <div class="card"><b style="color:var(--hi)">底線 2</b><br>週六上午 08:30–10:30（課後 12 小時內）完成週五晚間進度消化。</div>
+    <div class="card"><b style="color:var(--hi)">底線 3</b><br>週日 21:30 準時收工、整理隔日物品，確保 23:00 前入睡。</div>
+    <div class="card" style="border-color:rgba(129,140,248,.4)"><b style="color:var(--hi)">睡前黃金緩衝 22:30–23:30</b><br>手機轉勿擾，降溫、遠離螢幕，準備入睡。</div>
+  </div>
+
+  <h2 class="text-2xl" style="margin:40px 0 12px">關係時間與能量邊界</h2>
+  <div class="grid2">
+    <div class="card">
+      <b style="color:var(--hi)">時間邊界：零額外佔用</b>
+      <p style="margin:6px 0 12px">相處時間（聊天、約會、通話）嚴格從既有「自由探索與運動（每週 8.5–10h）」或「週末社交休閒（週日 3h）」中撥出。</p>
+      <b style="color:var(--hi)">三大絕對勿擾禁區</b>
+      <ol style="margin:6px 0 0;padding-left:18px"><li>睡前黃金緩衝（22:30–23:30 手機轉勿擾）</li><li>每日數學專注時段（30–50m 手機放視線之外）</li><li>週二／五回家後 30 分鐘（不排深夜情感交流）</li></ol>
+      <button class="btn" id="copyBtn" style="margin-top:14px">一鍵複製本週勿擾時段通知</button>
+      <div id="copyMsg" style="margin-top:6px;min-height:20px"></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <b style="color:var(--hi)">共同自習（Co-study）番茄鐘</b>
+      <div class="tag" style="margin:2px 0">50 分鐘專注 + 10 分鐘休息互動 · 推薦週一／四傍晚、週六上午</div>
+      <div id="pm" class="n" style="font-size:48px;color:var(--hi);font-weight:600">50:00</div>
+      <div id="pPhase" style="margin-bottom:8px">專注階段</div>
+      <div class="flex gap-2 justify-center"><button class="btn" id="pStart">啟動</button><button class="btn" id="pReset">重置</button></div>
+      <div class="tag" style="margin-top:8px">已完成循環：<span id="pCount" class="n">0</span></div>
+    </div>
+  </div>
+
+  <h2 class="text-2xl" style="margin:40px 0 4px">週日晚間 · 1 分鐘三紅線自我檢核</h2>
+  <div class="card" style="margin-top:10px" id="reviewBox"></div>
+  <div id="history" style="margin-top:12px"></div>
+</div></section>
+
+<footer class="w" style="padding:24px 20px 40px;border-top:1px solid var(--ln)" class="tag">資料僅儲存於本機瀏覽器 localStorage。</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const store={d:{tasks:{},checks:{},reviews:[]},load(){try{const v=localStorage.getItem('wros');if(v)this.d=Object.assign(this.d,JSON.parse(v))}catch(e){}},save(){try{localStorage.setItem('wros',JSON.stringify(this.d))}catch(e){}}};
+store.load();
+const NAMES=['週一','週二','週三','週四','週五','週六','週日'];
+const D=[
+{t:'主力讀書日',h:5.5,fx:['07:00-16:00'],fr:['16:00-18:00','19:00-22:30'],k:['數學核心演練（40m）','預習週二晚間進修內容','日常任務與其他主科']},
+{t:'極度壓縮日',h:1.75,fx:['07:00-16:00','17:30-21:30'],fr:['16:00-17:00','22:00-22:45'],k:['16:00 先買晚餐並用 30m 快速確認數學','22:00 到家後花 30m 趁熱整理當晚筆記，切忌熬夜']},
+{t:'進修緩衝日',h:2.5,fx:['07:00-16:00','18:00-21:00'],fr:['16:00-17:30','21:30-22:30'],k:['16:00–17:30 空檔完成日常任務與數學概念','21:30 回家整理晚間課程重點']},
+{t:'平日第二主力日',h:5.5,fx:['07:00-16:00'],fr:['16:00-18:00','19:00-22:30'],k:['消化週二與週三進修課程的作業與練習','數學核心演練（40m）','弱項補強']},
+{t:'衝刺與放鬆日',h:2.0,fx:['07:00-16:00','17:30-21:30'],fr:['16:00-17:00','22:00-23:00'],k:['16:00 空檔先完成數學概念','22:00 回家適度放鬆，晚間課程複習留至週六早上']},
+{t:'全週黃金關鍵日',h:7.5,fx:['13:00-17:00'],fr:['08:30-12:00','18:30-22:30'],k:['早上 3.5h 專攻週五進修消化（08:30–10:30 記憶留存率最高）與數學大範圍統整','晚上 4h 處理個人專題／作品集或自由休息']},
+{t:'總複習與身心重置日',h:9.0,fx:[],fr:['09:00-12:00','14:00-17:30','19:00-21:30'],k:['強制保留下午或晚上 3h 完全不碰學習材料（運動、社交、放空）','其餘 6h 進行本週總結與下週預習','21:30 準時收工']}
+];
+const mins=s=>{const[a,b]=s.split(':');return +a*60+ +b};
+const inR=(arr,m)=>arr.some(r=>{const[a,b]=r.split('-');return m>=mins(a)&&m<mins(b)});
+const pad=n=>String(n).padStart(2,'0');
+const dIdx=d=>(d.getDay()+6)%7;
+const dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+function monday(d){const x=new Date(d);x.setDate(x.getDate()-dIdx(x));x.setHours(0,0,0,0);return x}
+const wk=()=>dkey(monday(new Date()));
+const TA=[1,2,4];  // 進修日: 週二、三、五 (index 1,2,4)
+
+/* ---- 模組1 ---- */
+$('simDay').innerHTML=NAMES.map((n,i)=>`<option value="${i}">${n}</option>`).join('');
+function now(){
+  if($('simOn').checked){const t=$('simTime').value||'00:00';return{i:+$('simDay').value,m:mins(t),real:false}}
+  const d=new Date();return{i:dIdx(d),m:d.getHours()*60+d.getMinutes(),real:true,d}
+}
+function trackOf(i){return TA.includes(i)?'A':'B'}
+function mathWin(i,m){
+  if(TA.includes(i))return m>=960&&m<1020;
+  if(i>=5)return m>=540&&m<600;
+  return m>=1140&&m<1200;
+}
+function status(){
+  const {i,m}=now(),d=D[i];
+  $('clock').textContent=pad(Math.floor(m/60))+':'+pad(m%60);
+  $('dayname').textContent=NAMES[i]+'｜'+d.t+($('simOn').checked?'（模擬時間）':'');
+  let s,h;
+  if(m>=1410||m<390){s='建議就寢時段（23:30–06:30）';h='睡眠是明天專注力的基礎，請放下螢幕。'}
+  else if(m>=1350){s='睡前 1 小時黃金緩衝（勿擾降溫）';h='22:30–23:30 手機轉勿擾，降溫、洗澡、整理隔日物品。'}
+  else if(inR(d.fx,m)){s='固定課程／培訓中';h='當場吸收，善用課間 10 分鐘整理或閉目養神。'}
+  else if(mathWin(i,m)){s='建議執行數學演練';h='軌道 '+trackOf(i)+'：'+(trackOf(i)==='A'?'30–40 分鐘快閃':'45–60 分鐘深耕')+'，手機放視線之外。'}
+  else if(inR(d.fr,m)){s='可自主運用黃金時段';h='優先處理隔日進度，再做錯題訂正與弱項補強。'}
+  else{s='彈性緩衝與休息';h='吃飯、通勤、運動或放空，保留彈性。'}
+  $('status').textContent=s;$('statusHint').textContent=h;
+  $('fatigue').style.display=((i===1||i===4)&&m>=1320&&m<1365)?'block':'none';
+}
+['simOn','simDay','simTime'].forEach(id=>$(id).addEventListener('input',status));
+setInterval(status,15000);status();
+
+/* ---- 模組2 donut ---- */
+const SEG=[
+{n:'睡眠與生理需求',p:45,h:75.5,c:'#6366F1',d:'每日 7.5h 睡眠是底線，不拿睡眠換時間。'},
+{n:'固定課程與培訓學習',p:37,h:62,c:'#71717A',d:'當場吸收，把課間 10 分鐘用來整理或休息。'},
+{n:'可自主運用黃金時間',p:13,h:22,c:'#34D399',d:'集中處理數學演練、錯題訂正與弱項補強。'},
+{n:'彈性緩衝與休息',p:5,h:8.5,c:'#FBBF24',d:'保留緩衝避免行程一延遲就全面崩盤。'}
+];
+function drawDonut(sel){
+  const C=2*Math.PI*70;let off=0,out='';
+  SEG.forEach((s,i)=>{const L=C*s.p/100;
+    out+=`<circle class="seg" data-i="${i}" cx="100" cy="100" r="70" fill="none" stroke="${s.c}" stroke-width="${sel===i?26:18}" opacity="${sel===null||sel===i?1:.4}" stroke-dasharray="${L-1.5} ${C-L+1.5}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"/>`;off+=L});
+  out+=`<text x="100" y="98" text-anchor="middle" fill="#FAFAFA" font-size="26" font-weight="600" class="n">168</text><text x="100" y="116" text-anchor="middle" fill="#71717A" font-size="10">小時 / 週</text>`;
+  $('donut').innerHTML=out;
+  $('donut').querySelectorAll('.seg').forEach(e=>{const i=+e.dataset.i;e.onmouseenter=()=>info(i);e.onclick=()=>info(i)});
+}
+function info(i){
+  drawDonut(i);const s=SEG[i];
+  $('donutInfo').innerHTML=`<div class="tag">${s.p}%</div><h3 style="color:${s.c};font-size:20px;margin:2px 0">${s.n}</h3><div class="n" style="font-size:28px;color:var(--hi)">${s.h} 小時</div><p style="margin:6px 0 0">${s.d}</p>`;
+}
+drawDonut(null);
+$('donutInfo').innerHTML='<div class="tag">點擊或移入圓環區塊</div><div style="margin-top:6px">'+SEG.map(s=>`<div class="flex justify-between" style="padding:4px 0"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.c};margin-right:8px"></i>${s.n}</span><span class="n">${s.p}% · ${s.h}h</span></div>`).join('')+'</div>';
+
+/* ---- 24h 模式 ---- */
+const BASE=[['日間核心學習','07:30–16:00','當場吸收、善用課間 10 分鐘整理或閉目養神'],['睡眠與午休','23:30–06:30 + 午休 20–30 分鐘','睡足是專注力的前提'],['自主複習與深度輸出','19:00–22:00','優先處理隔日進度，再做錯題訂正與弱項補強'],['生理需求與通勤','晨起、三餐、沐浴、往返','通勤可聽音檔或記字彙，避免車上滑手機傷眼'],['自由探索與運動','16:00–17:30、22:00–22:30','至少 30 分鐘流汗運動或個人專題；睡前 30 分鐘遠離螢幕']];
+const COL=['#71717A','#6366F1','#34D399','#FBBF24','#F472B6','#38BDF8'];
+const MODES={
+std:{n:'標準平日',note:'平日標準基準，共 24h。',v:[8.5,7.5,3,3,2]},
+exp:{n:'探索成長模式',note:'自主複習 2–2.5h，增加自由探索與個人專題。',v:[8.5,7.5,2.25,3,2.75]},
+spr:{n:'高強度衝刺模式',note:'自由探索壓縮至 1h，自主複習增至 4h。',v:[8.5,7.5,4,3,1]},
+wkd:{n:'週末調整模式',note:'原 8.5h 重分配為：自主複習 4h + 專題／興趣 2.5h + 補眠社交 2h。避免週末熬夜造成週一社交時差。',
+ rows:[['自主複習','',''],['專題／興趣','',''],['補眠社交','',''],['睡眠與午休','',''],['自主複習與深度輸出（原）','',''],['生理需求與通勤','',''],['自由探索與運動（原）','','']],v:[4,2.5,2,7.5,3,3,2]}
+};
+let mode='std';
+function renderMode(){
+  const M=MODES[mode],sl=+$('sleepSlider').value,rows=M.rows||BASE.map((b,i)=>[b[0],b[1],b[2]]);
+  const sIdx=mode==='wkd'?3:1,fIdx=mode==='wkd'?6:4;
+  const v=M.v.slice();const delta=v[sIdx]-sl;v[sIdx]=sl;v[fIdx]=Math.max(0,+(v[fIdx]+delta).toFixed(2));
+  const tot=v.reduce((a,b)=>a+b,0);
+  $('modeNote').textContent=M.note;
+  $('modeBars').innerHTML=v.map((h,i)=>`<div style="padding:8px 0;${i?'border-top:1px solid var(--ln)':''}"><div class="flex justify-between"><span style="color:var(--hi)">${rows[i][0]}</span><span class="n">${h.toFixed(2).replace(/\.?0+$/,'')}h · ${(h/24*100).toFixed(1)}%</span></div><div class="bar" style="margin:4px 0"><i style="width:${h/24*100}%;background:${COL[i%6]}"></i></div>${rows[i][1]?`<div class="tag" style="text-transform:none">${rows[i][1]}｜${rows[i][2]}</div>`:''}</div>`).join('')+`<div class="tag n" style="margin-top:6px">合計 ${tot.toFixed(1)}h</div>`;
+  $('sleepVal').textContent=sl+' h';$('sleepWarn').style.display=sl<7?'block':'none';
+}
+$('modeTabs').innerHTML=Object.entries(MODES).map(([k,m])=>`<button class="btn" data-k="${k}">${m.n}</button>`).join('');
+$('modeTabs').onclick=e=>{const k=e.target.dataset.k;if(!k)return;mode=k;$('sleepSlider').value=MODES[k].v[k==='wkd'?3:1];[...$('modeTabs').children].forEach(b=>b.classList.toggle('on',b.dataset.k===k));renderMode()};
+$('modeTabs').firstChild.classList.add('on');
+$('sleepSlider').oninput=renderMode;renderMode();
+
+/* ---- 模組3 ---- */
+let view='all';
+function tkey(i,j){return wk()+'|'+i+'|'+j}
+function prog(i){const n=D[i].k.length;let c=0;D[i].k.forEach((_,j)=>{if(store.d.tasks[tkey(i,j)])c++});return[c,n]}
+function renderDays(){
+  const todayI=dIdx(new Date());
+  $('dayTabs').innerHTML=`<button class="btn ${view==='all'?'on':''}" data-v="all">總覽</button>`+NAMES.map((n,i)=>`<button class="btn ${view===String(i)?'on':''}" data-v="${i}">${n}${i===todayI?' ·今':''}</button>`).join('');
+  if(view==='all'){
+    $('dayView').innerHTML='<div class="grid2">'+D.map((d,i)=>{const[c,n]=prog(i);return`<div class="card" style="cursor:pointer" data-v="${i}"><div class="flex justify-between"><b style="color:var(--hi)">${NAMES[i]}｜${d.t}</b><span class="n">自主 ${d.h}h</span></div><div class="bar" style="margin:8px 0"><i style="width:${c/n*100}%;background:var(--g)"></i></div><div class="tag n">任務 ${c}/${n}</div></div>`}).join('')+'</div>';
+  }else{
+    const i=+view,d=D[i];
+    $('dayView').innerHTML=`<div class="card"><div class="flex justify-between flex-wrap gap-2"><h3 style="font-size:20px">${NAMES[i]}｜${d.t}</h3><span class="n" style="color:var(--g)">自主 ${d.h}h</span></div>
+    <div style="margin:10px 0"><span class="tag">固定</span><div class="n">${d.fx.length?d.fx.join('、').replace(/-/g,'–'):'無固定行程'}</div></div>
+    <div style="margin-bottom:10px"><span class="tag">自主</span><div class="n" style="color:var(--hi)">${d.fr.join('、').replace(/-/g,'–')}</div></div>
+    <span class="tag">任務</span>${d.k.map((t,j)=>`<label class="chk ${store.d.tasks[tkey(i,j)]?'d':''}"><input type="checkbox" data-i="${i}" data-j="${j}" ${store.d.tasks[tkey(i,j)]?'checked':''}><span>${t}</span></label>`).join('')}</div>`;
+  }
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-v]');
+  if(t&&(t.closest('#dayTabs')||t.closest('#dayView'))){view=t.dataset.v;renderDays()}
+});
+$('dayView').addEventListener('change',e=>{
+  const c=e.target;if(c.dataset.i===undefined)return;
+  const k=tkey(c.dataset.i,c.dataset.j);if(c.checked)store.d.tasks[k]=1;else delete store.d.tasks[k];
+  store.save();renderDays();
+});
+renderDays();
+
+/* ---- 模組4 ---- */
+const TRK={
+A:{n:'軌道 A｜進修日快閃（週二、三、五）',dur:[30,40],when:'16:00 結束日間行程後、晚間課程開課前空檔',steps:['專看 1 個核心公式／定理推導邏輯','不看詳解，親手重算 2–3 題經典例題']},
+B:{n:'軌道 B｜非進修日深耕（週一、四、六、日）',dur:[45,60],when:'晚間 19:00–20:00 或週末早上 09:00–10:00',steps:['大範圍概念統整與錯題本重做','計時演練 5–8 題進階題，訓練手感與速度']}
+};
+let trk=trackOf(dIdx(new Date())),dur=trk==='A'?40:50,left=dur*60,tmr=null,endAt=0;
+function renderTrack(){
+  const T=TRK[trk];
+  $('trackBtns').innerHTML=['A','B'].map(k=>`<button class="btn ${trk===k?'on':''}" data-k="${k}">軌道 ${k}</button>`).join('');
+  $('trackInfo').innerHTML=`<b style="color:var(--hi)">${T.n}</b><div class="tag" style="text-transform:none;margin:4px 0 8px">${T.dur[0]}–${T.dur[1]} 分鐘｜${T.when}</div>`+T.steps.map((s,i)=>`<label class="chk"><input type="checkbox"><span>${['①','②'][i]} ${s}</span></label>`).join('');
+  $('durBtns').innerHTML=[30,40,50,60].map(m=>`<button class="btn ${dur===m?'on':''}" data-m="${m}">${m}m</button>`).join('');
+}
+function showT(){$('tm').textContent=pad(Math.floor(left/60))+':'+pad(left%60)}
+$('trackBtns').onclick=e=>{const k=e.target.dataset.k;if(k){trk=k;renderTrack()}};
+$('durBtns').onclick=e=>{const m=+e.target.dataset.m;if(m){dur=m;resetT();renderTrack()}};
+function resetT(){clearInterval(tmr);tmr=null;left=dur*60;$('tStart').textContent='啟動';$('tMsg').textContent='';showT()}
+$('tStart').onclick=()=>{
+  if(tmr){clearInterval(tmr);tmr=null;$('tStart').textContent='繼續';return}
+  endAt=Date.now()+left*1000;$('tStart').textContent='暫停';
+  tmr=setInterval(()=>{left=Math.max(0,Math.round((endAt-Date.now())/1000));showT();
+    if(left<=0){clearInterval(tmr);tmr=null;$('tStart').textContent='啟動';$('tMsg').innerHTML='<span style="color:var(--g)">演練完成！按「今日打卡」記錄。</span>'}},250);
+};
+$('tReset').onclick=resetT;
+function streak(){let n=0;const d=new Date();if(!store.d.checks[dkey(d)])d.setDate(d.getDate()-1);while(store.d.checks[dkey(d)]){n++;d.setDate(d.getDate()-1)}return n}
+function renderDots(){
+  const mon=monday(new Date()),td=dkey(new Date());
+  $('dotRow').innerHTML=NAMES.map((n,i)=>{const d=new Date(mon);d.setDate(d.getDate()+i);const k=dkey(d);return`<div class="dot ${store.d.checks[k]?'on':''} ${k===td?'today':''}">${n[1]}</div>`}).join('');
+  $('streak').textContent=streak();
+}
+$('tCheck').onclick=()=>{const k=dkey(new Date());if(store.d.checks[k]){delete store.d.checks[k];$('tMsg').textContent='已取消今日打卡'}else{store.d.checks[k]=1;$('tMsg').innerHTML='<span style="color:var(--g)">今日已打卡 ✓</span>'}store.save();renderDots()};
+renderTrack();showT();renderDots();
+
+/* ---- 模組5 ---- */
+$('copyBtn').onclick=async()=>{
+  const msg=`嗨～跟你同步一下我這週的節奏，讓我們都能安心安排時間：\n\n【固定進修】\n・週二 17:30–21:30\n・週三 18:00–21:00\n・週五 17:30–21:30\n・週六 13:00–17:00\n\n【每日勿擾時段】\n・每日數學專注 30–50 分鐘（手機會放遠一點，晚點回你）\n・睡前 22:30–23:30 手機轉勿擾，23:30 前入睡\n・週二、週五 22:00 到家後 30 分鐘（整理筆記、洗澡休息）\n・週日 21:30 準時收工\n\n其他時間很樂意聊天、約會、通話，謝謝你的體諒與支持！`;
+  let ok=false;try{await navigator.clipboard.writeText(msg);ok=true}catch(e){}
+  if(!ok){const t=document.createElement('textarea');t.value=msg;document.body.appendChild(t);t.select();try{ok=document.execCommand('copy')}catch(e){}t.remove()}
+  $('copyMsg').innerHTML=ok?'<span style="color:var(--g)">已複製，可直接貼給對方。</span>':'<span style="color:var(--r)">複製失敗，請手動選取。</span>';
+};
+/* 番茄鐘 */
+let pPhase='f',pLeft=3000,pT=null,pEnd=0,pN=0;
+function showP(){$('pm').textContent=pad(Math.floor(pLeft/60))+':'+pad(pLeft%60);$('pPhase').textContent=pPhase==='f'?'專注階段（50m）':'休息互動（10m）';$('pPhase').style.color=pPhase==='f'?'var(--hi)':'var(--g)';$('pCount').textContent=pN}
+function pRun(){pEnd=Date.now()+pLeft*1000;pT=setInterval(()=>{pLeft=Math.max(0,Math.round((pEnd-Date.now())/1000));showP();
+  if(pLeft<=0){if(pPhase==='f'){pPhase='b';pLeft=600;pN++}else{pPhase='f';pLeft=3000}pEnd=Date.now()+pLeft*1000;showP()}},250)}
+$('pStart').onclick=()=>{if(pT){clearInterval(pT);pT=null;$('pStart').textContent='繼續'}else{$('pStart').textContent='暫停';pRun()}};
+$('pReset').onclick=()=>{clearInterval(pT);pT=null;pPhase='f';pLeft=3000;pN=0;$('pStart').textContent='啟動';showP()};
+showP();
+/* 三紅線 */
+const Q=[
+{k:'睡眠紅線',q:'本週有因通話或傳訊導致超過 23:30 才入睡嗎？',o:['沒有','有'],red:1,adv:'下週把手機勿擾提前到 22:30，並與伴侶約定固定結束通話時間（例如 22:15），睡前緩衝不接受例外。'},
+{k:'進度紅線',q:'本週每天的「數學概念確認」與日常進度都有如期完成嗎？',o:['都有完成','有缺漏'],red:1,adv:'下週週一先把 7 天的數學時段排進行事曆，缺漏的進度優先補在週六早上 08:30–10:30，並減少一項非必要任務。'},
+{k:'情緒紅線',q:'本週的互動是讓你感到被支持與有動力，還是頻繁分心與焦慮？',o:['被支持、有動力','分心或焦慮'],red:1,adv:'下週減少深夜情感交流，把相處集中到週日 3h 的固定時段；與伴侶坦誠討論節奏，必要時降低通訊頻率。'}
+];
+let ans=[null,null,null];
+function renderReview(){
+  const done=ans.every(a=>a!==null),reds=Q.map((q,i)=>ans[i]===q.red);
+  let fb='';
+  if(done){fb=reds.some(x=>x)?Q.map((q,i)=>reds[i]?`<div style="border:1px solid var(--r);background:rgba(248,113,113,.08);border-radius:8px;padding:10px 12px;margin-top:8px"><b style="color:var(--r)">● ${q.k}亮紅燈</b><div style="margin-top:2px">${q.adv}</div></div>`:'').join(''):'<div style="border:1px solid var(--g);background:rgba(74,222,128,.08);border-radius:8px;padding:10px 12px;margin-top:8px;color:var(--g)">● 全數綠燈：本週節奏平衡，維持現行配置。</div>'}
+  $('reviewBox').innerHTML=Q.map((q,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--ln)"><div class="flex items-center gap-2"><i style="width:10px;height:10px;border-radius:50%;background:${ans[i]===null?'#3F3F46':reds[i]?'var(--r)':'var(--g)'}"></i><b style="color:var(--hi)">${q.k}</b></div><div style="margin:2px 0 8px">${q.q}</div><div class="flex gap-2 flex-wrap">${q.o.map((o,v)=>`<button class="btn ${ans[i]===v?(v===q.red?'red on':'grn on'):''}" data-q="${i}" data-a="${v}">${o}</button>`).join('')}</div></div>`).join('')+fb+`<button class="btn" id="saveRev" style="margin-top:12px" ${done?'':'disabled'}>儲存本週檢核紀錄</button>`;
+}
+$('reviewBox').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.q!==undefined){ans[+b.dataset.q]=+b.dataset.a;renderReview();return}
+  if(b.id==='saveRev'){
+    const w=wk(),rec={w,a:ans.slice(),red:Q.filter((q,i)=>ans[i]===q.red).map(q=>q.k)};
+    store.d.reviews=store.d.reviews.filter(r=>r.w!==w);store.d.reviews.unshift(rec);store.d.reviews=store.d.reviews.slice(0,8);store.save();renderHist();b.textContent='已儲存 ✓';
+  }
+};
+function renderHist(){
+  $('history').innerHTML=store.d.reviews.length?'<div class="tag" style="margin-bottom:6px">歷史檢核（本週起算週一日期）</div>'+store.d.reviews.map(r=>`<div class="flex justify-between" style="padding:6px 0;border-top:1px solid var(--ln)"><span class="n">${r.w}</span><span style="color:${r.red.length?'var(--r)':'var(--g)'}">${r.red.length?'紅燈：'+r.red.join('、'):'全綠燈'}</span></div>`).join(''):'';
+}
+const cur=store.d.reviews.find(r=>r.w===wk());if(cur)ans=cur.a.slice();
+renderReview();renderHist();
+</script>
+</body>
+</html>
